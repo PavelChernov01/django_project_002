@@ -14,7 +14,7 @@ from pathlib import Path
 import environ
 import os
 
-from config.env import env
+from config.env import env, BASE_DIR
 
 # False if not in os.environ because of casting above
 DEBUG = env('DEBUG')
@@ -61,7 +61,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR.parent, 'templates/tasks')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -1,0 +1,23 @@
+{% extends 'task_manager/base.html' %}
+
+{% block content %}
+<h1>Список задач</h1>
+
+<table border="1" cellpadding="10" cellspacing="0">
+    <tr bgcolor="lightgray">
+        <th>№</th>
+        <th>Название</th>
+        <th>Статус</th>
+        <th>Приоритет</th>
+    </tr>
+
+    {% for task in tasks %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ task.task_name }}</td>
+        <td>{{ task.status }}</td>
+        <td>{{ task.priority }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

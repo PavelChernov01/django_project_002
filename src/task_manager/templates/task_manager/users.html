@@ -1,0 +1,21 @@
+{% extends 'task_manager/base.html' %}
+
+{% block content %}
+<h1>Список пользователей</h1>
+
+<table border="1" cellpadding="10" cellspacing="0">
+    <tr bgcolor="lightgray">
+        <th>№</th>
+        <th>Имя</th>
+        <th>Возраст</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.age }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

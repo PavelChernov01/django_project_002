@@ -2,6 +2,7 @@ from django.db import models
 from account.models import User
 from .project import Project
 from .tag import Tag
+from ..managers import CompletedTaskManager, ActiveTaskManager  # Добавьте эту строку
 
 
 class Task(models.Model):
@@ -41,6 +42,13 @@ class Task(models.Model):
         related_name='tasks',
         blank=True
     )
+
+    # Стандартный менеджер
+    objects = models.Manager()
+
+    # Кастомные менеджеры
+    completed = CompletedTaskManager()
+    active = ActiveTaskManager()
 
     class Meta:
         ordering = ['-priority', '-created_at']

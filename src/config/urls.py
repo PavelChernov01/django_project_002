@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
 from task_manager import views
 
 urlpatterns = [
@@ -23,4 +24,11 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('tasks/', views.tasks_list, name='tasks'),
     path('users/', views.users_list, name='users'),
+    path('user-tasks/<int:user_id>/', views.user_tasks_with_comments, name='user_tasks'),
 ]
+
+if settings.DEBUG:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+    urlpatterns = [
+        *urlpatterns,
+    ] + debug_toolbar_urls()

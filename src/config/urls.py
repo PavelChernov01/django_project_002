@@ -25,10 +25,23 @@ urlpatterns = [
     path('tasks/', views.tasks_list, name='tasks'),
     path('users/', views.users_list, name='users'),
     path('user-tasks/<int:user_id>/', views.user_tasks_with_comments, name='user_tasks'),
+
+    # ЗАДАЧА 1-2: Формы комментариев
+    path('comment/', views.comment_form_view, name='comment_form'),
+    path('comment-widget/', views.comment_widget_view, name='comment_widget'),
+
+    # ЗАДАЧА 3-6: Формы задач
+    path('task/create/', views.task_create_view, name='task_create'),
+    path('task/edit/<int:task_id>/', views.task_create_view, name='task_edit'),
+    path('task/widget/', views.task_widget_view, name='task_widget'),
+
+    # ЗАДАЧА 7: Crispy forms
+    path('task/crispy/', views.task_crispy_view, name='task_crispy'),
 ]
 
 if settings.DEBUG:
     from debug_toolbar.toolbar import debug_toolbar_urls
+
     urlpatterns = [
-        *urlpatterns,
-    ] + debug_toolbar_urls()
+                      *urlpatterns,
+                  ] + debug_toolbar_urls()

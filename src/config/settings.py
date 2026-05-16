@@ -142,3 +142,10 @@ STATIC_URL = 'static/'
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+
+# URL для доступа к медиафайлам через браузер
+MEDIA_URL = '/media/'
+
+# Путь к папке на диске для хранения загруженных файлов
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

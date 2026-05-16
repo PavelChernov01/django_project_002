@@ -162,3 +162,21 @@ class TaskWidgetForm(forms.ModelForm):
                 'class': 'form-select'
             }),
         }
+
+
+# ============================================
+# ЗАДАЧА 5
+# ============================================
+class AttachmentUploadForm(forms.ModelForm):
+    class Meta:
+        from .models import Attachment
+        model = Attachment
+        fields = ['task', 'file']
+        labels = {
+            'task': 'Задача',
+            'file': 'Файл',
+        }
+        widgets = {
+            'task': forms.Select(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={'class': 'form-control'}),
+        }

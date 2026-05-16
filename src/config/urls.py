@@ -17,10 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
+from django.conf.urls.static import static
 from task_manager import views
 
 urlpatterns = [
+    # Админка
     path('admin/', admin.site.urls),
+
+    # Главная и основные страницы
     path('', views.home, name='home'),
     path('tasks/', views.tasks_list, name='tasks'),
     path('users/', views.users_list, name='users'),
@@ -37,11 +41,20 @@ urlpatterns = [
 
     # ЗАДАЧА 7: Crispy forms
     path('task/crispy/', views.task_crispy_view, name='task_crispy'),
+
+    # ЗАДАЧА 1-9: Медиафайлы и вложения
+    path('attachments/', views.attachment_list, name='attachment_list'),  # Список вложений с пагинацией
+    path('upload/', views.upload_attachment, name='upload_attachment'),  # Форма загрузки файла
+    path('external-upload/', views.save_external_file, name='external_upload'),  # Загрузка из внешнего URL
 ]
 
+# Настройки для режима разработки
 if settings.DEBUG:
     from debug_toolbar.toolbar import debug_toolbar_urls
 
     urlpatterns = [
                       *urlpatterns,
                   ] + debug_toolbar_urls()
+
+    # Добавляем поддержку медиафайлов (для отображения загруженных изображений)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

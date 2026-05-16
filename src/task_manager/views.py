@@ -1,14 +1,17 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Prefetch
 from django.contrib import messages
-from task_manager.models import Task, Comment
+from django.core.paginator import Paginator
+from django.core.files.base import ContentFile
+from task_manager.models import Task, Comment, Attachment
 from account.models import User
 from .forms import (
     CommentForm, CommentWidgetForm,
     TaskCreateForm, TaskEditForm,
-    TaskValidateForm, TaskWidgetForm
+    TaskValidateForm, TaskWidgetForm,
+    AttachmentUploadForm
 )
-
+import urllib.request
 
 tasks_data = [
     {"task_name": "Fix login bug", "status": "in progress", "priority": "high"},
@@ -62,7 +65,6 @@ def user_tasks_with_comments(request, user_id):
     }
     return render(request, 'task_manager/user_tasks.html', context)
 
-# ============================================
 
 def comment_form_view(request):
     form = CommentForm()
@@ -122,3 +124,76 @@ def task_crispy_view(request):
             messages.success(request, f'Задача "{task.title}" создана!')
             return redirect('task_crispy')
     return render(request, 'task_manager/task_crispy.html', {'form': form})
+
+
+# ============================================
+# ЗАДАЧИ ПО МЕДИАФАЙЛАМ (1-9)
+# ============================================
+
+def upload_attachment(request):
+    if request.method == 'POST':
+        form = AttachmentUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            attachment = form.save(commit=False)
+            attachment.filename = request.FILES['file'].name
+            attachment.save()
+            messages.success(request, f'Файл "{attachment.filename}" успешно загружен!')
+            return redirect('attachment_list')
+    else:
+        form = AttachmentUploadForm()
+
+    return render(request, 'task_manager/upload.html', {'form': form})
+
+
+def attachment_list(request):
+    task_id = request.GET.get('task_id')
+
+    if task_id:
+        attachments = Attachment.objects.filter(task_id=task_id)
+    else:
+        attachments = Attachment.objects.all()
+
+    paginator = Paginator(attachments, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    tasks = Task.objects.all()
+
+    context = {
+        'page_obj': page_obj,
+        'tasks': tasks,
+        'selected_task': task_id,
+    }
+    return render(request, 'task_manager/attachments.html', context)
+
+
+def save_external_file(request):
+    if request.method == 'POST':
+        external_url = request.POST.get('url')
+        task_id = request.POST.get('task_id')
+
+        try:
+            task = Task.objects.get(id=task_id)
+
+            response = urllib.request.urlopen(external_url)
+            file_content = response.read()
+
+            filename = external_url.split('/')[-1]
+            if not filename or '.' not in filename:
+                filename = 'downloaded_file'
+
+            attachment = Attachment(
+                task=task,
+                filename=filename
+            )
+            attachment.file.save(filename, ContentFile(file_content))
+            attachment.save()
+
+            messages.success(request, f'Файл "{filename}" успешно сохранён из внешнего пути!')
+        except Exception as e:
+            messages.error(request, f'Ошибка: {e}')
+
+        return redirect('attachment_list')
+
+    tasks = Task.objects.all()
+    return render(request, 'task_manager/external_upload.html', {'tasks': tasks})

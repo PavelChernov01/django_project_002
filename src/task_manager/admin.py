@@ -5,6 +5,7 @@ from .models import (
     Project, ProjectDetail, Task,
     Comment, Attachment, Tag, Person, Employee, Client
 )
+from .models import Attachment
 
 
 # ============================================
@@ -272,10 +273,27 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Attachment)
 class AttachmentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'filename', 'task', 'uploaded_at')
+    list_display = ('id', 'filename', 'task', 'uploaded_at', 'image_preview')
+    list_display_links = ('id', 'filename')
     list_filter = ('uploaded_at', 'task')
     search_fields = ('filename', 'task__title')
+    list_per_page = 20
+    readonly_fields = ('uploaded_at', 'image_preview')
 
+    fieldsets = (
+        (None, {'fields': ('task', 'filename', 'file')}),
+        ('Дата', {'fields': ('uploaded_at',)}),
+        ('Предпросмотр', {'fields': ('image_preview',)}),
+    )
+
+    def image_preview(self, obj):
+        if obj.file:
+            if obj.is_image():
+                return mark_safe(f'<img src="{obj.file.url}" style="max-height: 100px; max-width: 200px;" />')
+            else:
+                return mark_safe(f'<a href="{obj.file.url}">Скачать {obj.filename}</a>')
+        return 'Нет файла'
+    image_preview.short_description = 'Предпросмотр'
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):

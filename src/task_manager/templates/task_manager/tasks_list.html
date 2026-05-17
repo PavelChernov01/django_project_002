@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список задач</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .pagination { margin-top: 20px; }
+        .pagination a, .pagination span { padding: 5px 10px; margin: 0 2px; border: 1px solid #ddd; }
+        .current { background-color: #007bff; color: white; }
+        .filter-form { margin-bottom: 20px; padding: 10px; background: #f9f9f9; }
+        a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>Список задач</h1>
+
+    <div class="filter-form">
+        <form method="get">
+            <label>Статус:</label>
+            <select name="status">
+                <option value="">Все</option>
+                {% for code, name in statuses %}
+                    <option value="{{ code }}" {% if current_status == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+            <label>Проект:</label>
+            <select name="project_id">
+                <option value="">Все</option>
+                {% for project in projects %}
+                    <option value="{{ project.id }}" {% if current_project == project.id|stringformat:"s" %}selected{% endif %}>{{ project.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Фильтр</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Статус</th>
+                <th>Приоритет</th>
+                <th>Проект</th>
+                <th>Исполнители</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td><a href="{% url 'task_detail' task.id %}">{{ task.title }}</a></td>
+                <td>{{ task.get_status_display }}</td>
+                <td>{{ task.get_priority_display }}</td>
+                <td>{{ task.project.name }}</td>
+                <td>{{ task.users.all|join:", " }}</td>
+            </tr>
+            {% empty %}
+                <tr><td colspan="6">Нет задач</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if current_status %}&status={{ current_status }}{% endif %}{% if current_project %}&project_id={{ current_project }}{% endif %}">Первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_project %}&project_id={{ current_project }}{% endif %}">Предыдущая</a>
+        {% endif %}
+
+        <span class="current">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_project %}&project_id={{ current_project }}{% endif %}">Следующая</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_project %}&project_id={{ current_project }}{% endif %}">Последняя</a>
+        {% endif %}
+    </div>
+
+    <p><a href="/task/create/">Создать новую задачу</a> | <a href="/">На главную</a></p>
+</body>
+</html>

@@ -3,6 +3,8 @@ from django.db.models import Prefetch
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.files.base import ContentFile
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, DeleteView
+from django.urls import reverse_lazy
 from task_manager.models import Task, Comment, Attachment
 from account.models import User
 from .forms import (
@@ -126,10 +128,6 @@ def task_crispy_view(request):
     return render(request, 'task_manager/task_crispy.html', {'form': form})
 
 
-# ============================================
-# ЗАДАЧИ ПО МЕДИАФАЙЛАМ (1-9)
-# ============================================
-
 def upload_attachment(request):
     if request.method == 'POST':
         form = AttachmentUploadForm(request.POST, request.FILES)
@@ -197,3 +195,132 @@ def save_external_file(request):
 
     tasks = Task.objects.all()
     return render(request, 'task_manager/external_upload.html', {'tasks': tasks})
+
+
+# ============================================
+# GENERIC VIEWS
+# ============================================
+
+class HomeView(TemplateView):
+    template_name = 'task_manager/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Главная страница'
+        context['total_tasks'] = Task.objects.count()
+        context['total_users'] = User.objects.count()
+        return context
+
+
+class AboutView(TemplateView):
+    template_name = 'task_manager/about.html'
+
+
+class TasksListView(ListView):
+    model = Task
+    template_name = 'task_manager/tasks_list_generic.html'
+    context_object_name = 'tasks'
+    paginate_by = 10
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status = self.request.GET.get('status')
+        project_id = self.request.GET.get('project_id')
+
+        if status:
+            queryset = queryset.filter(status=status)
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+
+        return queryset.select_related('project').prefetch_related('users')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from task_manager.models import Project
+        context['statuses'] = Task.STATUS_CHOICES
+        context['projects'] = Project.objects.all()
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_project'] = self.request.GET.get('project_id', '')
+        return context
+
+
+class TaskDetailView(DetailView):
+    model = Task
+    template_name = 'task_manager/task_detail_generic.html'
+    context_object_name = 'task'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = self.object.comments.all().order_by('-created_at')
+        context['attachments'] = self.object.attachments.all()
+        context['total_comments'] = context['comments'].count()
+        return context
+
+
+class UserTasksListView(ListView):
+    model = Task
+    template_name = 'task_manager/user_tasks_list_generic.html'
+    context_object_name = 'tasks'
+    paginate_by = 10
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        return Task.objects.filter(users__id=user_id).select_related('project')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.kwargs.get('user_id')
+        context['selected_user'] = User.objects.get(id=user_id)
+        return context
+
+
+class AttachmentListView(ListView):
+    model = Attachment
+    template_name = 'task_manager/attachments_list_generic.html'
+    context_object_name = 'attachments'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        task_id = self.request.GET.get('task_id')
+        if task_id:
+            queryset = queryset.filter(task_id=task_id)
+        return queryset.select_related('task')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tasks'] = Task.objects.all()
+        context['selected_task'] = self.request.GET.get('task_id', '')
+        return context
+
+
+class TaskCreateView(CreateView):
+    model = Task
+    form_class = TaskCreateForm
+    template_name = 'task_manager/task_form_generic.html'
+    success_url = reverse_lazy('tasks_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Создание задачи (Generic)'
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Задача "{self.object.title}" успешно создана!')
+        return response
+
+
+class CommentDeleteView(DeleteView):
+    model = Comment
+    template_name = 'task_manager/comment_confirm_delete_generic.html'
+    success_url = reverse_lazy('tasks_list')
+
+    def get_success_url(self):
+        task_id = self.object.task.id
+        return reverse_lazy('task_detail', kwargs={'pk': task_id})
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Комментарий успешно удалён!')
+        return super().delete(request, *args, **kwargs)

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Кэшированный список задач</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .cache-info { background: #d4edda; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="cache-info">
+        <p>⏱️ Эта страница кэшируется на 30 минут</p>
+        <p>🕐 Обновлено: {% now "d.m.Y H:i:s" %}</p>
+    </div>
+
+    <h1>Список задач (кэшированный)</h1>
+
+    <ul>
+        {% for task in tasks %}
+        <li>{{ task.title }} - {{ task.project.name }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="/cache/invalidate/">Очистить кэш</a></p>
+</body>
+</html>

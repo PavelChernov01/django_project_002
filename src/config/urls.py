@@ -14,6 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+"""
+URL configuration for config project.
+"""
+
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
@@ -22,6 +26,12 @@ from task_manager import views
 from task_manager.views import (
     HomeView, AboutView, TasksListView, TaskDetailView, TaskCreateView,
     UserTasksListView, AttachmentListView, CommentDeleteView
+)
+
+# Импорты для кэша
+from task_manager.cache_examples import (
+    test_lru_cache, cached_tasks_list, cached_projects_list,
+    invalidate_task_cache, cached_statistics_block, invalidate_file_cache
 )
 
 urlpatterns = [
@@ -39,6 +49,16 @@ urlpatterns = [
     path('user-tasks-list/<int:user_id>/', UserTasksListView.as_view(), name='user_tasks_list'),
     path('attachments-list/', AttachmentListView.as_view(), name='attachment_list_generic'),
     path('comment-delete/<int:pk>/', CommentDeleteView.as_view(), name='comment_delete'),
+
+    # ============================================
+    # ЗАДАЧИ ПО КЭШИРОВАНИЮ (CACHE)
+    # ============================================
+    path('cache/lru-test/', test_lru_cache, name='lru_test'),
+    path('cache/tasks/', cached_tasks_list, name='cached_tasks'),
+    path('cache/projects/', cached_projects_list, name='cached_projects'),
+    path('cache/invalidate/', invalidate_task_cache, name='invalidate_cache'),
+    path('cache/statistics/', cached_statistics_block, name='cached_statistics'),
+    path('cache/invalidate-file/', invalidate_file_cache, name='invalidate_file_cache'),
 
     # ============================================
     # СТАРЫЕ VIEWS

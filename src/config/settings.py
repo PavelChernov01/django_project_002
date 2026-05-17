@@ -149,3 +149,24 @@ MEDIA_URL = '/media/'
 
 # Путь к папке на диске для хранения загруженных файлов
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# ============================================
+# НАСТРОЙКА КЭША (CACHE)
+# ============================================
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+        'TIMEOUT': 1800,  # 30 минут
+    },
+    'file': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache_files'),
+        'TIMEOUT': 1200,  # 20 минут
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}

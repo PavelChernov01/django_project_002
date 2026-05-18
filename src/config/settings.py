@@ -50,7 +50,11 @@ INSTALLED_APPS = [
     'account',
     'crispy_forms',
     'crispy_bootstrap5',
+    # DRF
+    'rest_framework',
+    'drf_spectacular',
 ]
+
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -169,4 +173,28 @@ CACHES = {
             'MAX_ENTRIES': 1000
         }
     }
+}
+
+# ============================================
+# НАСТРОЙКИ DJANGO REST FRAMEWORK (DRF)
+# ============================================
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Task Manager API',
+    'DESCRIPTION': 'API для управления задачами, проектами, комментариями и пользователями',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
 }

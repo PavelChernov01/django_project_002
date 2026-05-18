@@ -18,8 +18,9 @@ Including another URLconf
 URL configuration for config project.
 """
 
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from task_manager import views
@@ -34,9 +35,24 @@ from task_manager.cache_examples import (
     invalidate_task_cache, cached_statistics_block, invalidate_file_cache
 )
 
+# Импорты для DRF документации
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
 urlpatterns = [
     # Админка
     path('admin/', admin.site.urls),
+
+    # ============================================
+    # API ДОКУМЕНТАЦИЯ (DRF SPECTACULAR)
+    # ============================================
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    # ============================================
+    # API ENDPOINTS
+    # ============================================
+    path('api/', include('task_manager.api_urls')),
 
     # ============================================
     # GENERIC VIEWS (НОВЫЕ)

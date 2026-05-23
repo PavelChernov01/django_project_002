@@ -2,12 +2,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from .models import Task, Tag, Project, Comment, Attachment
 from .api_serializers import (
     TaskSerializer, UserSerializer, TagSerializer,
     ProjectSerializer, CommentSerializer, AttachmentSerializer
 )
+from account.models import User
 
 
 # ============================================
@@ -181,3 +186,90 @@ class AttachmentRetrieveDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """GET/DELETE для вложения (без UPDATE)"""
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
+
+
+# ============================================
+# ЗАДАЧА 5: TOKEN AUTHENTICATION
+# ============================================
+
+class ObtainAuthTokenView(APIView):
+    """Получение токена по email и паролю"""
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["Authentication"],
+        summary="Получить токен",
+        description="Авторизация по email и паролю, возвращает токен для доступа к API",
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'email': {'type': 'string', 'example': 'admin@example.com'},
+                    'password': {'type': 'string', 'example': 'admin123'},
+                }
+            }
+        },
+        responses={200: {'description': 'Токен получен'}, 400: {'description': 'Ошибка'}}
+    )
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response({'error': 'Email and password required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.check_password(password):
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token, created = Token.objects.get_or_create(user=user)
+
+        return Response({
+            'token': token.key,
+            'user_id': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        })
+
+
+class ProtectedTaskListView(APIView):
+    """Список задач - только для аутентифицированных пользователей"""
+    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["Tasks"],
+        summary="Список задач (только для авторизованных)",
+        description="Возвращает список задач. Требуется токен авторизации.",
+        responses={200: TaskSerializer(many=True), 401: {'description': 'Не авторизован'}}
+    )
+    def get(self, request):
+        tasks = Task.objects.all()[:20]
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@extend_schema(
+    tags=["Authentication"],
+    summary="Информация о пользователе",
+    description="Возвращает информацию о текущем авторизованном пользователе",
+    responses={200: {'description': 'Данные пользователя'}, 401: {'description': 'Не авторизован'}}
+)
+def get_user_info(request):
+    """Получение информации о текущем пользователе"""
+    return Response({
+        'id': request.user.id,
+        'email': request.user.email,
+        'phone': request.user.phone,
+        'first_name': request.user.first_name,
+        'last_name': request.user.last_name,
+        'is_staff': request.user.is_staff,
+    })

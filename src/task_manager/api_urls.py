@@ -4,7 +4,8 @@ from .api_views import (
     TagListAPIView, TagDetailAPIView,
     ProjectListCreateAPIView, ProjectRetrieveUpdateDestroyAPIView,
     CommentListCreateAPIView, CommentRetrieveUpdateDestroyAPIView,
-    AttachmentListCreateAPIView, AttachmentRetrieveDestroyAPIView
+    AttachmentListCreateAPIView, AttachmentRetrieveDestroyAPIView,
+    ObtainAuthTokenView, ProtectedTaskListView, get_user_info
 )
 
 urlpatterns = [
@@ -30,4 +31,11 @@ urlpatterns = [
     # Вложения
     path('attachments/', AttachmentListCreateAPIView.as_view(), name='api_attachments'),
     path('attachments/<int:pk>/', AttachmentRetrieveDestroyAPIView.as_view(), name='api_attachment_detail'),
+
+    # ============================================
+    # TOKEN AUTHENTICATION (ЗАДАЧА 5)
+    # ============================================
+    path('auth/token/', ObtainAuthTokenView.as_view(), name='api_obtain_token'),
+    path('protected-tasks/', ProtectedTaskListView.as_view(), name='api_protected_tasks'),
+    path('auth/user/', get_user_info, name='api_user_info'),
 ]

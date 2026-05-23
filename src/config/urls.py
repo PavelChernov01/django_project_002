@@ -100,6 +100,11 @@ urlpatterns = [
     path('attachments/', views.attachment_list, name='attachment_list'),
     path('upload/', views.upload_attachment, name='upload_attachment'),
     path('external-upload/', views.save_external_file, name='external_upload'),
+
+    # ЗАДАЧА 4: Аутентификация
+    path('auth-only/', views.auth_only_view, name='auth_only'),
+    path('perm-tasks/', views.perm_tasks_view, name='perm_tasks'),
+    path('perm-both/', views.perm_both_view, name='perm_both'),
 ]
 
 if settings.DEBUG:

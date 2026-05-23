@@ -5,6 +5,8 @@ from django.core.paginator import Paginator
 from django.core.files.base import ContentFile
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required, permission_required
+from django.http import HttpResponse
 from task_manager.models import Task, Comment, Attachment
 from account.models import User
 from .forms import (
@@ -324,3 +326,42 @@ class CommentDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, 'Комментарий успешно удалён!')
         return super().delete(request, *args, **kwargs)
+
+
+# ============================================
+# ЗАДАЧА 4: АУТЕНТИФИКАЦИЯ (login_required и permission_required)
+# ============================================
+
+@login_required(login_url='/admin/login/')
+def auth_only_view(request):
+    """Доступ только для аутентифицированных пользователей"""
+    return HttpResponse(
+        f"<h1>Только для авторизованных!</h1>"
+        f"<p>Привет, {request.user.email}!</p>"
+        f"<p>Вы успешно вошли в систему.</p>"
+        f"<p><a href='/admin/logout/'>Выйти</a></p>"
+    )
+
+
+@permission_required('task_manager.view_task', login_url='/admin/login/')
+def perm_tasks_view(request):
+    """Доступ только для пользователей с разрешением view_task"""
+    tasks = Task.objects.all()[:10]
+    html = "<h1>Список задач (доступ по permission)</h1>"
+    html += "<p>У вас есть разрешение на просмотр задач.</p>"
+    html += "<ul>"
+    for task in tasks:
+        html += f"<li>{task.title}</li>"
+    html += "</ul>"
+    html += "<p><a href='/admin/logout/'>Выйти</a></p>"
+    return HttpResponse(html)
+
+
+@permission_required(['task_manager.view_task', 'task_manager.view_project'], login_url='/admin/login/')
+def perm_both_view(request):
+    """Доступ только для пользователей с обоими разрешениями (view_task и view_project)"""
+    return HttpResponse(
+        "<h1>Доступ разрешён!</h1>"
+        "<p>У вас есть права на просмотр задач и проектов.</p>"
+        "<p><a href='/admin/logout/'>Выйти</a></p>"
+    )

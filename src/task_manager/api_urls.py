@@ -5,7 +5,9 @@ from .api_views import (
     ProjectListCreateAPIView, ProjectRetrieveUpdateDestroyAPIView,
     CommentListCreateAPIView, CommentRetrieveUpdateDestroyAPIView,
     AttachmentListCreateAPIView, AttachmentRetrieveDestroyAPIView,
-    ObtainAuthTokenView, ProtectedTaskListView, get_user_info
+    ObtainAuthTokenView, ProtectedTaskListView, get_user_info,
+
+    UserListView, TaskListView, MyTaskListView, TaskDateFilterView
 )
 
 urlpatterns = [
@@ -38,4 +40,19 @@ urlpatterns = [
     path('auth/token/', ObtainAuthTokenView.as_view(), name='api_obtain_token'),
     path('protected-tasks/', ProtectedTaskListView.as_view(), name='api_protected_tasks'),
     path('auth/user/', get_user_info, name='api_user_info'),
+
+    # ============================================
+    # НОВЫЕ МАРШРУТЫ ДЛЯ ФИЛЬТРАЦИИ И ПАГИНАЦИИ
+    # ============================================
+    # ЗАДАЧА 1: Пользователи с пагинацией
+    path('users/', UserListView.as_view(), name='api_users_list'),
+
+    # ЗАДАЧА 2: Задачи с кастомной пагинацией (5 элементов)
+    path('tasks-filter/', TaskListView.as_view(), name='api_tasks_filter'),
+
+    # ЗАДАЧА 3: Мои задачи (только свои)
+    path('my-tasks/', MyTaskListView.as_view(), name='api_my_tasks'),
+
+    # ЗАДАЧА 4: Фильтр по диапазону дат
+    path('tasks-date-filter/', TaskDateFilterView.as_view(), name='api_tasks_date_filter'),
 ]

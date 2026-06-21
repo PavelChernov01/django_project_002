@@ -104,3 +104,23 @@ class AttachmentSerializer(serializers.ModelSerializer):
         if obj.file and request:
             return request.build_absolute_uri(obj.file.url)
         return obj.file.url if obj.file else None
+
+
+# ============================================
+# НОВЫЕ СЕРИАЛИЗАТОРЫ ДЛЯ ФИЛЬТРАЦИИ И ПАГИНАЦИИ
+# ============================================
+
+class UserListSerializer(serializers.ModelSerializer):
+    """Сериализатор для списка пользователей"""
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'phone', 'first_name', 'last_name', 'is_active']
+
+
+class TaskListSerializer(serializers.ModelSerializer):
+    """Сериализатор для списка задач"""
+
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'description', 'status', 'priority', 'project', 'created_at']

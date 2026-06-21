@@ -1,18 +1,23 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.filters import OrderingFilter, SearchFilter
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Task, Tag, Project, Comment, Attachment
+from account.models import User
 from .api_serializers import (
     TaskSerializer, UserSerializer, TagSerializer,
-    ProjectSerializer, CommentSerializer, AttachmentSerializer
+    ProjectSerializer, CommentSerializer, AttachmentSerializer,
+    UserListSerializer, TaskListSerializer
 )
-from account.models import User
+from .api_filters import TaskFilter, UserTaskFilter, TaskDateFilter
+from .api_pagination import UserPagination, CustomTaskPagination
 
 
 # ============================================
@@ -273,3 +278,54 @@ def get_user_info(request):
         'last_name': request.user.last_name,
         'is_staff': request.user.is_staff,
     })
+
+
+# ============================================
+# ЗАДАЧА 1: Список пользователей с пагинацией
+# ============================================
+class UserListView(ListAPIView):
+    """Список пользователей с пагинацией (10 элементов)"""
+    queryset = User.objects.all()
+    serializer_class = UserListSerializer
+    pagination_class = UserPagination
+
+
+# ============================================
+# ЗАДАЧА 2: Список задач с кастомной пагинацией (5 элементов)
+# ============================================
+class TaskListView(ListAPIView):
+    """Список задач с кастомной пагинацией (5 элементов, можно изменить до 50)"""
+    queryset = Task.objects.all()
+    serializer_class = TaskListSerializer
+    pagination_class = CustomTaskPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_class = TaskFilter
+    ordering_fields = ['created_at', 'priority']
+    ordering = ['-created_at']
+
+
+# ============================================
+# ЗАДАЧА 3: Пользователь видит только свои задачи
+# ============================================
+class MyTaskListView(ListAPIView):
+    """Список задач текущего пользователя (только свои задачи)"""
+    serializer_class = TaskListSerializer
+    pagination_class = CustomTaskPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = UserTaskFilter
+    ordering_fields = ['created_at', 'priority']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return Task.objects.filter(users=self.request.user)
+
+
+# ============================================
+# ЗАДАЧА 4: Фильтр по диапазону дат
+# ============================================
+class TaskDateFilterView(ListAPIView):
+    """Задачи с фильтром по диапазону дат"""
+    queryset = Task.objects.all()
+    serializer_class = TaskListSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TaskDateFilter

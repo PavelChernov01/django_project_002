@@ -329,3 +329,47 @@ class TaskDateFilterView(ListAPIView):
     serializer_class = TaskListSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TaskDateFilter
+
+# ============================================
+# ЗАДАЧА 8: CELERY BEAT API
+# ============================================
+
+from rest_framework import viewsets
+from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule, SolarSchedule
+from .api_serializers import (
+    PeriodicTaskSerializer, IntervalScheduleSerializer,
+    CrontabScheduleSerializer, SolarScheduleSerializer
+)
+
+
+class PeriodicTaskViewSet(viewsets.ModelViewSet):
+    """API для управления периодическими задачами"""
+    queryset = PeriodicTask.objects.all()
+    serializer_class = PeriodicTaskSerializer
+
+    def perform_create(self, serializer):
+        print(f"✅ Создана новая периодическая задача: {serializer.validated_data.get('name')}")
+        return super().perform_create(serializer)
+
+    def perform_update(self, serializer):
+        print(f"🔄 Обновлена задача: {serializer.validated_data.get('name')}")
+        return super().perform_update(serializer)
+
+    def perform_destroy(self, instance):
+        print(f"🗑️ Удалена задача: {instance.name}")
+        return super().perform_destroy(instance)
+
+
+class IntervalScheduleViewSet(viewsets.ModelViewSet):
+    queryset = IntervalSchedule.objects.all()
+    serializer_class = IntervalScheduleSerializer
+
+
+class CrontabScheduleViewSet(viewsets.ModelViewSet):
+    queryset = CrontabSchedule.objects.all()
+    serializer_class = CrontabScheduleSerializer
+
+
+class SolarScheduleViewSet(viewsets.ModelViewSet):
+    queryset = SolarSchedule.objects.all()
+    serializer_class = SolarScheduleSerializer

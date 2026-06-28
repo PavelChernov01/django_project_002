@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework.authtoken',
     'django_filters',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
@@ -175,3 +177,20 @@ SPECTACULAR_SETTINGS = {
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ============================================
+# НАСТРОЙКИ CELERY
+# ============================================
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_TASK_SOFT_TIME_LIMIT = 30 * 60
+CELERY_IGNORE_RESULT = False
+CELERY_STORE_ERRORS_EVEN_IF_IGNORED = True

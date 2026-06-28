@@ -112,7 +112,6 @@ class AttachmentSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     """Сериализатор для списка пользователей"""
-
     class Meta:
         model = User
         fields = ['id', 'email', 'phone', 'first_name', 'last_name', 'is_active']
@@ -120,7 +119,66 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class TaskListSerializer(serializers.ModelSerializer):
     """Сериализатор для списка задач"""
-
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'status', 'priority', 'project', 'created_at']
+
+
+# ============================================
+# СЕРИАЛИЗАТОРЫ ДЛЯ CELERY BEAT (ЗАДАЧА 8)
+# ============================================
+
+from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule, SolarSchedule
+
+
+class IntervalScheduleSerializer(serializers.ModelSerializer):
+    """Сериализатор для интервальных расписаний"""
+    class Meta:
+        model = IntervalSchedule
+        fields = ['id', 'every', 'period']
+        read_only_fields = ['id']
+
+
+class CrontabScheduleSerializer(serializers.ModelSerializer):
+    """Сериализатор для crontab расписаний"""
+    class Meta:
+        model = CrontabSchedule
+        fields = ['id', 'minute', 'hour', 'day_of_month', 'month_of_year', 'day_of_week']
+        read_only_fields = ['id']
+
+
+class SolarScheduleSerializer(serializers.ModelSerializer):
+    """Сериализатор для solar расписаний (восход/закат)"""
+    class Meta:
+        model = SolarSchedule
+        fields = ['id', 'event', 'latitude', 'longitude']
+        read_only_fields = ['id']
+
+
+class PeriodicTaskSerializer(serializers.ModelSerializer):
+    """Сериализатор для периодических задач"""
+    interval_detail = IntervalScheduleSerializer(source='interval', read_only=True)
+    crontab_detail = CrontabScheduleSerializer(source='crontab', read_only=True)
+    solar_detail = SolarScheduleSerializer(source='solar', read_only=True)
+
+    class Meta:
+        model = PeriodicTask
+        fields = [
+            'id', 'name', 'task', 'interval', 'interval_detail',
+            'crontab', 'crontab_detail', 'solar', 'solar_detail',
+            'enabled', 'one_off', 'start_time', 'args', 'kwargs',
+            'expires', 'date_changed', 'description'
+        ]
+        read_only_fields = ['id', 'date_changed']
+
+    def create(self, validated_data):
+        validated_data.pop('interval_detail', None)
+        validated_data.pop('crontab_detail', None)
+        validated_data.pop('solar_detail', None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop('interval_detail', None)
+        validated_data.pop('crontab_detail', None)
+        validated_data.pop('solar_detail', None)
+        return super().update(instance, validated_data)

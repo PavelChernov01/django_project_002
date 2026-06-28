@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .api_views import (
     TaskListAPIView, TaskDetailAPIView, TaskCreateAPIView, TaskUpdateAPIView, TaskDeleteAPIView,
     TagListAPIView, TagDetailAPIView,
@@ -6,9 +7,16 @@ from .api_views import (
     CommentListCreateAPIView, CommentRetrieveUpdateDestroyAPIView,
     AttachmentListCreateAPIView, AttachmentRetrieveDestroyAPIView,
     ObtainAuthTokenView, ProtectedTaskListView, get_user_info,
-
-    UserListView, TaskListView, MyTaskListView, TaskDateFilterView
+    UserListView, TaskListView, MyTaskListView, TaskDateFilterView,
+    PeriodicTaskViewSet, IntervalScheduleViewSet, CrontabScheduleViewSet, SolarScheduleViewSet
 )
+
+# Создаём роутер для Celery Beat
+router = DefaultRouter()
+router.register(r'periodic-tasks', PeriodicTaskViewSet, basename='periodic-tasks')
+router.register(r'intervals', IntervalScheduleViewSet, basename='intervals')
+router.register(r'crontabs', CrontabScheduleViewSet, basename='crontabs')
+router.register(r'solar', SolarScheduleViewSet, basename='solar')
 
 urlpatterns = [
     # Задачи (4 основных запроса)
@@ -44,15 +52,13 @@ urlpatterns = [
     # ============================================
     # НОВЫЕ МАРШРУТЫ ДЛЯ ФИЛЬТРАЦИИ И ПАГИНАЦИИ
     # ============================================
-    # ЗАДАЧА 1: Пользователи с пагинацией
     path('users/', UserListView.as_view(), name='api_users_list'),
-
-    # ЗАДАЧА 2: Задачи с кастомной пагинацией (5 элементов)
     path('tasks-filter/', TaskListView.as_view(), name='api_tasks_filter'),
-
-    # ЗАДАЧА 3: Мои задачи (только свои)
     path('my-tasks/', MyTaskListView.as_view(), name='api_my_tasks'),
-
-    # ЗАДАЧА 4: Фильтр по диапазону дат
     path('tasks-date-filter/', TaskDateFilterView.as_view(), name='api_tasks_date_filter'),
+
+    # ============================================
+    # CELERY BEAT API (ЗАДАЧА 8)
+    # ============================================
+    path('', include(router.urls)),
 ]

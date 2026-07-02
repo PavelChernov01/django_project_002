@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест LRU Cache</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .info { background: #e3f2fd; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Тест @lru_cache</h1>
+
+    <div class="info">
+        <h3>Информация о кэше:</h3>
+        <p>Хиты: {{ cache_info.hits }}</p>
+        <p>Промахи: {{ cache_info.misses }}</p>
+        <p>Максимальный размер: {{ cache_info.maxsize }}</p>
+        <p>Текущий размер: {{ cache_info.currsize }}</p>
+    </div>
+
+    <h3>Результаты вычислений:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Список</th>
+                <th>Сумма положительных чисел</th>
+                <th>Взято из кэша?</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in results %}
+            <tr>
+                <td>{{ item.list }}</td>
+                <td>{{ item.result }}</td>
+                <td>{% if forloop.counter > 4 %}Да{% else %}Нет{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

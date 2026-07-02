@@ -1,10 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{{ task.title }}</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .task-info { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .comments { margin-top: 20px; }
+        .comment { border-bottom: 1px solid #eee; padding: 10px; }
+        .delete-btn { color: red; font-size: 12px; margin-left: 10px; }
+        a { color: #007bff; text-decoration: none; }
+    </style>
 </head>
 <body>
+    <h1>{{ task.title }}</h1>
 
+    <div class="task-info">
+        <p><strong>Описание:</strong> {{ task.description|default:"Нет описания" }}</p>
+        <p><strong>Статус:</strong> {{ task.get_status_display }}</p>
+        <p><strong>Приоритет:</strong> {{ task.get_priority_display }}</p>
+        <p><strong>Проект:</strong> {{ task.project.name }}</p>
+        <p><strong>Исполнители:</strong> {{ task.users.all|join:", " }}</p>
+        <p><strong>Создана:</strong> {{ task.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+
+    <div class="comments">
+        <h2>Комментарии ({{ total_comments }})</h2>
+        {% for comment in comments %}
+            <div class="comment">
+                <strong>{{ comment.author.first_name }} {{ comment.author.last_name }}</strong>
+                <small>({{ comment.created_at|date:"d.m.Y H:i" }})</small>
+                <p>{{ comment.text }}</p>
+                <a href="{% url 'comment_delete' comment.id %}" class="delete-btn" onclick="return confirm('Удалить комментарий?')">Удалить</a>
+            </div>
+        {% empty %}
+            <p>Нет комментариев</p>
+        {% endfor %}
+    </div>
+
+    <p><a href="/tasks/">Назад к списку задач</a> | <a href="/">На главную</a></p>
 </body>
 </html>

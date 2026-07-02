@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список вложений</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .pagination { margin-top: 20px; }
+        .pagination a, .pagination span { padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; text-decoration: none; }
+        .current { background-color: #007bff; color: white; border-color: #007bff; }
+        .filter { margin-bottom: 20px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        img { max-height: 50px; max-width: 100px; }
+        a { color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>Список вложений</h1>
+
+    <div class="filter">
+        <form method="get">
+            <label>Фильтр по задаче:</label>
+            <select name="task_id" onchange="this.form.submit()">
+                <option value="">Все задачи</option>
+                {% for task in tasks %}
+                    <option value="{{ task.id }}" {% if selected_task|stringformat:"s" == task.id|stringformat:"s" %}selected{% endif %}>
+                        {{ task.title }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя файла</th>
+                <th>Задача</th>
+                <th>Дата загрузки</th>
+                <th>Предпросмотр</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attachment in page_obj %}
+            <tr>
+                <td>{{ attachment.id }}</td>
+                <td><a href="{{ attachment.file.url }}">{{ attachment.filename }}</a></td>
+                <td>{{ attachment.task.title }}</td>
+                <td>{{ attachment.uploaded_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                    {% if attachment.is_image %}
+                        <img src="{{ attachment.file.url }}" alt="{{ attachment.filename }}">
+                    {% else %}
+                        <a href="{{ attachment.file.url }}">Скачать</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Нет вложений</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if selected_task %}&task_id={{ selected_task }}{% endif %}">Первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if selected_task %}&task_id={{ selected_task }}{% endif %}">Предыдущая</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if selected_task %}&task_id={{ selected_task }}{% endif %}">Следующая</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_task %}&task_id={{ selected_task }}{% endif %}">Последняя</a>
+        {% endif %}
+    </div>
+
+    <p><a href="/upload/">Загрузить новый файл</a> | <a href="/">На главную</a></p>
+</body>
+</html>

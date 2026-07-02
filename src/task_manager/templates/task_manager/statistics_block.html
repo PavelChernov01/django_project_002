@@ -1,0 +1,22 @@
+{% load cache %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Статистика</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    {% cache 1200 statistics_block %}
+    <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
+        <h3>Статистика проекта</h3>
+        <p>📊 Всего задач: {{ stats.total_tasks }}</p>
+        <p>✅ Завершённых задач: {{ stats.completed_tasks }}</p>
+        <p>📁 Всего проектов: {{ stats.total_projects }}</p>
+        <p>🕐 Обновлено: {% now "d.m.Y H:i:s" %}</p>
+    </div>
+    {% endcache %}
+
+    <p><a href="/cache/invalidate-file/">Очистить файловый кэш</a></p>
+</body>
+</html>

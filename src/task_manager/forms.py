@@ -1,0 +1,182 @@
+from django import forms
+from django.core.exceptions import ValidationError
+from .models import Task, Comment, Project
+from account.models import User
+
+
+# ============================================
+# ЗАДАЧА 1:
+# ============================================
+class CommentForm(forms.Form):
+    message = forms.CharField(
+        label='Текст комментария',
+        max_length=500,
+        help_text='Максимум 500 символов'
+    )
+    user = forms.ModelChoiceField(
+        label='Автор комментария',
+        queryset=User.objects.all(),
+        empty_label='Выберите пользователя'
+    )
+
+
+# ============================================
+# ЗАДАЧА 2:
+# ============================================
+class CommentWidgetForm(forms.Form):
+    message = forms.CharField(
+        label='Текст комментария',
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'cols': 40,
+            'placeholder': 'Введите ваш комментарий...',
+            'class': 'form-control'
+        })
+    )
+    user = forms.ModelChoiceField(
+        label='Автор комментария',
+        queryset=User.objects.all(),
+        widget=forms.Select(attrs={
+            'class': 'form-select custom-user-class'
+        })
+    )
+
+
+# ============================================
+# ЗАДАЧА 3:
+# ============================================
+class TaskCreateForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'priority', 'status', 'project']
+        labels = {
+            'title': 'Название задачи',
+            'description': 'Описание',
+            'priority': 'Приоритет',
+            'status': 'Статус',
+            'project': 'Проект',
+        }
+        help_texts = {
+            'title': 'Введите название задачи',
+            'description': 'Подробное описание задачи',
+        }
+        error_messages = {
+            'title': {
+                'required': 'Поле "Название" обязательно для заполнения',
+            },
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+# ============================================
+# ЗАДАЧА 4:
+# ============================================
+class TaskEditForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'priority', 'status', 'project']
+        labels = {
+            'title': 'Название задачи',
+            'description': 'Описание',
+            'priority': 'Приоритет',
+            'status': 'Статус',
+            'project': 'Проект',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+# ============================================
+# ЗАДАЧА 5:
+# ============================================
+class TaskValidateForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'priority', 'status', 'project']
+        labels = {
+            'title': 'Название задачи',
+            'description': 'Описание',
+            'priority': 'Приоритет',
+            'status': 'Статус',
+            'project': 'Проект',
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        priority = cleaned_data.get('priority')
+        description = cleaned_data.get('description')
+
+        if priority in [3, 4] and not description:
+            raise ValidationError(
+                'Для задач с высоким или критическим приоритетом необходимо указать описание!'
+            )
+        return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+# ============================================
+# ЗАДАЧА 6:
+# ============================================
+class TaskWidgetForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['title', 'description', 'priority', 'status', 'project']
+        labels = {
+            'title': 'Название задачи',
+            'description': 'Описание',
+            'priority': 'Приоритет',
+            'status': 'Статус',
+            'project': 'Проект',
+        }
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название задачи',
+                'style': 'width: 100%;'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 5,
+                'cols': 50,
+                'class': 'form-control',
+                'placeholder': 'Подробное описание задачи...',
+                'style': 'width: 100%;'
+            }),
+            'priority': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'project': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+        }
+
+
+# ============================================
+# ЗАДАЧА 5
+# ============================================
+class AttachmentUploadForm(forms.ModelForm):
+    class Meta:
+        from .models import Attachment
+        model = Attachment
+        fields = ['task', 'file']
+        labels = {
+            'task': 'Задача',
+            'file': 'Файл',
+        }
+        widgets = {
+            'task': forms.Select(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={'class': 'form-control'}),
+        }

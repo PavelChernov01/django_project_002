@@ -1,21 +1,77 @@
-{% extends 'task_manager/base.html' %}
-
-{% block content %}
-<h1>Список пользователей</h1>
-
-<table border="1" cellpadding="10" cellspacing="0">
-    <tr bgcolor="lightgray">
-        <th>№</th>
-        <th>Имя</th>
-        <th>Возраст</th>
-    </tr>
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Пользователи</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .user-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            width: 300px;
+        }
+        .user-card strong {
+            font-size: 18px;
+            color: #007bff;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+        }
+        hr {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Список пользователей</h1>
+    <a href="/" class="back-link">На главную</a>
+    
+    <h2>Пользователи из базы данных:</h2>
     {% for user in users %}
-    <tr>
-        <td>{{ forloop.counter }}</td>
-        <td>{{ user.name }}</td>
-        <td>{{ user.age }}</td>
-    </tr>
+    <div class="user-card">
+        <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
+        Телефон: {{ user.phone }}<br>
+        Email: {{ user.email }}<br>
+        <a href="/user-tasks/{{ user.id }}/">Показать задачи и комментарии</a>
+    </div>
+    {% empty %}
+        <p>Нет пользователей в базе данных</p>
     {% endfor %}
-</table>
-{% endblock %}
+    
+    <hr>
+    
+    <h2>Тестовые пользователи (из списка):</h2>
+    {% for u in users_data %}
+    <div class="user-card">
+        <strong>{{ u.name }}</strong><br>
+        Возраст: {{ u.age }}
+    </div>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Форма комментария (кастомные виджеты)</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-control { width: 100%; max-width: 500px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: Arial; }
+        .form-select { width: 100%; max-width: 300px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #f8f9fa; }
+        .custom-user-class { background-color: #e8f4f8; border: 2px solid #007bff; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .success { color: green; padding: 10px; background: #d4edda; border-radius: 4px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Добавить комментарий (кастомные виджеты)</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>{{ form.message.label }}:</label>
+            {{ form.message }}
+        </div>
+
+        <div class="form-group">
+            <label>{{ form.user.label }}:</label>
+            {{ form.user }}
+        </div>
+
+        <button type="submit">Отправить</button>
+    </form>
+
+    <p><a href="/">На главную</a></p>
+</body>
+</html>

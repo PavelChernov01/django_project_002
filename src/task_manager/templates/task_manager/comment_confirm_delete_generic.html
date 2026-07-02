@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Удаление комментария</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .confirm-box { background: #f9f9f9; padding: 20px; border-radius: 5px; max-width: 500px; margin: 20px 0; }
+        button { padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .cancel { background: #6c757d; margin-left: 10px; }
+        a { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>Удаление комментария</h1>
+
+    <div class="confirm-box">
+        <p>Вы уверены, что хотите удалить этот комментарий?</p>
+        <p><strong>{{ comment.text }}</strong></p>
+        <p><em>Автор: {{ comment.author.first_name }} {{ comment.author.last_name }}</em></p>
+        <p><small>Дата: {{ comment.created_at|date:"d.m.Y H:i" }}</small></p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Да, удалить</button>
+        <a href="{% url 'task_detail' comment.task.id %}" class="cancel"><button type="button" class="cancel">Отмена</button></a>
+    </form>
+
+    <p style="margin-top: 20px;"><a href="{% url 'task_detail' comment.task.id %}">Вернуться к задаче</a></p>
+</body>
+</html>
